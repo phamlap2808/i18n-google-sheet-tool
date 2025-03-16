@@ -1,0 +1,58 @@
+{
+  "name": "i18n-google-sheet-tool",
+  "version": "1.0.0",
+  "description": "A tool for syncing translations between Google Sheets and JSON files for i18n localization",
+  "main": "dist/index.js",
+  "bin": {
+    "i18n-sync": "./dist/cli.js"
+  },
+  "scripts": {
+    "start": "node dist/index.js",
+    "build": "tsc",
+    "dev": "ts-node src/index.ts",
+    "sync:to-json": "ts-node src/index.ts --direction to-json",
+    "sync:to-sheet": "ts-node src/index.ts --direction to-sheet",
+    "test": "jest",
+    "lint": "eslint . --ext .ts",
+    "prepare": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yourusername/i18n-google-sheet-tool.git"
+  },
+  "keywords": [
+    "i18n",
+    "internationalization",
+    "google-sheets",
+    "translation",
+    "localization"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/yourusername/i18n-google-sheet-tool/issues"
+  },
+  "homepage": "https://github.com/yourusername/i18n-google-sheet-tool#readme",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "googleapis": "^126.0.1",
+    "fs-extra": "^11.2.0",
+    "yargs": "^17.7.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.24",
+    "@types/jest": "^29.5.12",
+    "@types/fs-extra": "^11.0.4",
+    "@types/yargs": "^17.0.32",
+    "@typescript-eslint/eslint-plugin": "^7.1.0",
+    "@typescript-eslint/parser": "^7.1.0",
+    "eslint": "^8.57.0",
+    "jest": "^29.7.0",
+    "ts-jest": "^29.1.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  }
+} 

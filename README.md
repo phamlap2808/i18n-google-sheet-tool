@@ -1,193 +1,122 @@
 # i18n Google Sheet Tool
 
-A tool for synchronizing translations between Google Sheets and JSON files for multilingual (i18n) support.
+A tool for synchronizing translations between Google Sheets and JSON files for i18n localization.
 
-## What does this tool do?
+[🇻🇳 Tiếng Việt](README.vi.md)
 
-This tool helps you:
+## Features
 
-1. **Sync from Google Sheets to JSON files** - Fetch data from Google Sheets and save it as JSON files
-2. **Sync from JSON files to Google Sheets** - Update Google Sheets with data from your JSON files
+- Two-way synchronization between Google Sheets and JSON files
+- Multi-language support
+- Automatic sheet creation if not exists
+- OAuth2 authentication with Google Sheets API
+- Easy integration into existing workflows
+- Configurable OAuth callback port to avoid conflicts
+
+## Requirements
+
+- Node.js >= 14
+- A Google Cloud Project with Google Sheets API enabled
+- OAuth2 credentials from Google Cloud Console
 
 ## Installation
 
-### Option 1: Install globally
-
 ```bash
-# Install from GitHub
-npm install -g git+https://github.com/yourusername/i18n-google-sheet-tool.git
+# Global installation
+npm install -g git+https://github.com/phamlap2808/i18n-google-sheet-tool.git
 
-# Use from anywhere
-i18n-sync --direction to-json --sheet-id YOUR_SHEET_ID --credentials ./credentials.json
+# Or as a project dependency
+npm install --save-dev git+https://github.com/phamlap2808/i18n-google-sheet-tool.git
 ```
 
-### Option 2: Use in a project
+## Configuration
 
-```bash
-# Add to your project
-npm install --save-dev git+https://github.com/yourusername/i18n-google-sheet-tool.git
+1. Create a `.env` file in your project root:
 
-# Add to your package.json scripts
-"scripts": {
-  "i18n:download": "i18n-sync --direction to-json",
-  "i18n:upload": "i18n-sync --direction to-sheet"
-}
-```
-
-### Option 3: Clone and use directly
-
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/i18n-google-sheet-tool.git
-cd i18n-google-sheet-tool
-
-# Install dependencies
-npm install
-
-# Build the project
-npm run build
-```
-
-## Setup Guide
-
-### Step 1: Set up Google Sheets API
-
-1. **Create a project on Google Cloud Console**:
-   - Go to [Google Cloud Console](https://console.cloud.google.com/)
-   - Create a new project (or select an existing one)
-
-2. **Enable Google Sheets API**:
-   - Find and enable "Google Sheets API" in the API library
-
-3. **Create a Service Account**:
-   - Go to "APIs & Services" > "Credentials"
-   - Select "Create Credentials" > "Service Account"
-   - Fill in the details and download the JSON key file
-
-4. **Share your Google Sheet**:
-   - Open your Google Sheet
-   - Click the "Share" button
-   - Add the service account email (found in the JSON file) with edit permissions
-
-### Step 2: Configure the tool
-
-Choose one of these configuration methods:
-
-#### Method 1: Environment variables
-
-Create a `.env` file:
-
-```
-GOOGLE_SHEET_ID=your_google_sheet_id_here
-GOOGLE_API_CREDENTIALS=path_to_credentials_json_file
+```env
+GOOGLE_SHEET_ID=your_sheet_id_here
+GOOGLE_CLIENT_ID=your_client_id_here
+GOOGLE_CLIENT_SECRET=your_client_secret_here
 LOCALES_DIR=./locales
+OAUTH_PORT=8591  # Optional, defaults to 8591
 ```
 
-#### Method 2: Command line arguments
+2. Get Google OAuth2 Credentials:
+   - Go to [Google Cloud Console](https://console.cloud.google.com)
+   - Create a new project or select an existing one
+   - Enable Google Sheets API
+   - Create OAuth2 credentials:
+     - Go to "APIs & Services" > "Credentials"
+     - Click "Create Credentials" > "OAuth client ID"
+     - Choose "Web application"
+     - Add "http://localhost:8591/oauth2callback" to Authorized redirect URIs (or your custom port)
+     - Copy Client ID and Client Secret to your `.env` file
+
+## Usage
+
+### First-time Authentication
 
 ```bash
-i18n-sync --sheet-id=your_sheet_id --credentials=./credentials.json --output-dir=./locales
+# Run the OAuth2 server
+ts-node src/server.ts
+
+# In another terminal, run the auth command
+i18n-sync --auth
 ```
 
-#### Method 3: Config file
-
-Create a `i18n-config.json` file:
-
-```json
-{
-  "GOOGLE_SHEET_ID": "your_sheet_id",
-  "GOOGLE_API_CREDENTIALS": "./credentials.json",
-  "LOCALES_DIR": "./locales"
-}
-```
-
-Then use it:
+### Download from Google Sheets to JSON
 
 ```bash
-i18n-sync --config=i18n-config.json
-```
-
-## Using the Tool
-
-### Sync from Google Sheets to JSON (download)
-
-```bash
-# Using the CLI
 i18n-sync --direction to-json
-
-# Using npm scripts
-npm run sync:to-json
 ```
 
-### Sync from JSON to Google Sheets (upload)
+### Upload from JSON to Google Sheets
 
 ```bash
-# Using the CLI
 i18n-sync --direction to-sheet
-
-# Using npm scripts
-npm run sync:to-sheet
 ```
 
-## CLI Options
+### Additional Options
 
+```bash
+# Specify output directory
+i18n-sync --direction to-json --output-dir ./path/to/locales
+
+# Specify Google Sheet ID
+i18n-sync --direction to-json --sheet-id your_sheet_id
+
+# Use config file
+i18n-sync --direction to-json --config ./config.json
 ```
-Options:
-  -d, --direction    Sync direction: to-json (from Sheet to JSON) or to-sheet
-                    (from JSON to Sheet)  [choices: "to-json", "to-sheet"] [default: "to-json"]
-  -s, --sheet-id     Google Sheet ID (overrides env variable)
-  -c, --credentials  Path to Google API credentials JSON file (overrides env variable)
-  -o, --output-dir   Output directory for locales (overrides env variable)
-  --config           Path to config file
-  -h, --help         Show help
-```
 
-## Data Format
+## Google Sheet Structure
 
-### Google Sheets Format
+- Each sheet represents a translation group
+- First row is the header with columns:
+  - `key`: Translation key
+  - Other columns are language codes (e.g., en, vi, de, ...)
 
-- Each sheet (page) in Google Sheets corresponds to a section in the JSON file
-- Each sheet must have the following format:
+Example:
+| key | en | vi |
+|-----|----|----|
+| hello | Hello | Xin chào |
+| goodbye | Goodbye | Tạm biệt |
 
-| key | en | vi | de | ... |
-|-----|----|----|----|----|
-| hello | Hello | Xin Chào | Hallo | ... |
-| welcome | Welcome | Chào mừng | Willkommen | ... |
-| goodbye | Goodbye | Tạm biệt | Auf Wiedersehen | ... |
-
-### JSON Format
-
-After synchronization, the JSON files will have the following structure:
+## JSON Structure
 
 ```json
 {
-  "sheet_name_1": {
-    "hello": "Hello",
-    "welcome": "Welcome",
-    "goodbye": "Goodbye"
-  },
-  "sheet_name_2": {
-    "key1": "Value 1",
-    "key2": "Value 2"
-  }
+  "hello": "Hello",
+  "goodbye": "Goodbye"
 }
 ```
 
-Each language will have its own JSON file:
-```
-locales/
-├── en.json
-├── vi.json
-├── de.json
-└── ...
-```
-
-## Special Features
-
-- **Automatic Sheet Creation**: When syncing from JSON to Google Sheets, the tool automatically creates new sheets if it finds sections that don't exist in the Google Sheets.
-- **Multi-language Support**: Automatically handles multiple languages simultaneously (en, vi, de, ...)
-- **Bidirectional Sync**: Flexibility to edit at either end (Google Sheets or JSON)
+JSON files will be created in the `locales` directory (or specified directory) with the language code as the filename (e.g., `en.json`, `vi.json`).
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! Please feel free to submit issues or pull requests.
+
+## License
+
+MIT

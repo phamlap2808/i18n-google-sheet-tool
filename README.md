@@ -34,11 +34,19 @@ npm install --save-dev git+https://github.com/phamlap2808/i18n-google-sheet-tool
 1. Create a `.env` file in your project root:
 
 ```env
+# The ID of your Google Sheet (found in the URL between /d/ and /edit)
 GOOGLE_SHEET_ID=your_sheet_id_here
+
+# OAuth2 credentials from Google Cloud Console
 GOOGLE_CLIENT_ID=your_client_id_here
 GOOGLE_CLIENT_SECRET=your_client_secret_here
+
+# Directory where translation JSON files will be stored (default: ./locales)
 LOCALES_DIR=./locales
-OAUTH_PORT=8591  # Optional, defaults to 8591
+
+# Port for OAuth2 callback server (default: 8591)
+# Make sure this matches the port in your Google OAuth2 redirect URI
+OAUTH_PORT=8591
 ```
 
 2. Get Google OAuth2 Credentials:

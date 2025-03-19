@@ -34,11 +34,19 @@ npm install --save-dev git+https://github.com/phamlap2808/i18n-google-sheet-tool
 1. Tạo file `.env` trong thư mục gốc của project:
 
 ```env
+# ID của Google Sheet (lấy từ URL giữa /d/ và /edit)
 GOOGLE_SHEET_ID=your_sheet_id_here
+
+# Thông tin xác thực OAuth2 từ Google Cloud Console
 GOOGLE_CLIENT_ID=your_client_id_here
 GOOGLE_CLIENT_SECRET=your_client_secret_here
+
+# Thư mục chứa các file JSON dịch thuật (mặc định: ./locales)
 LOCALES_DIR=./locales
-OAUTH_PORT=8591  # Tùy chọn, mặc định là 8591
+
+# Port cho server OAuth2 callback (mặc định: 8591)
+# Đảm bảo port này khớp với port trong URI chuyển hướng OAuth2 của Google
+OAUTH_PORT=8591
 ```
 
 2. Lấy Google OAuth2 Credentials:

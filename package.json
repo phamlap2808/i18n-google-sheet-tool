@@ -7,11 +7,9 @@
     "i18n-sync": "./dist/cli.js"
   },
   "scripts": {
-    "start": "node dist/index.js",
     "build": "tsc",
-    "dev": "ts-node src/index.ts",
-    "sync:to-json": "ts-node src/index.ts --direction to-json",
-    "sync:to-sheet": "ts-node src/index.ts --direction to-sheet",
+    "sync:to-json": "ts-node src/cli.ts --direction to-json",
+    "sync:to-sheet": "ts-node src/cli.ts --direction to-sheet",
     "auth": "ts-node src/cli.ts --auth",
     "test": "jest",
     "lint": "eslint . --ext .ts",
@@ -19,7 +17,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/yourusername/i18n-google-sheet-tool.git"
+    "url": "git+https://github.com/phamlap2808/i18n-google-sheet-tool.git"
   },
   "keywords": [
     "i18n",
@@ -31,9 +29,9 @@
   "author": "Your Name",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/yourusername/i18n-google-sheet-tool/issues"
+    "url": "https://github.com/phamlap2808/i18n-google-sheet-tool/issues"
   },
-  "homepage": "https://github.com/yourusername/i18n-google-sheet-tool#readme",
+  "homepage": "https://github.com/phamlap2808/i18n-google-sheet-tool#readme",
   "dependencies": {
     "@types/open": "^6.1.0",
     "dotenv": "^16.4.5",

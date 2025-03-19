@@ -1,36 +1,92 @@
-import { google, sheets_v4 } from 'googleapis';
-import * as path from 'path';
+import { google } from 'googleapis';
 import { SheetData, TranslationRow } from '../types';
+import { OAuth2Client, Credentials } from 'google-auth-library';
+import fs from 'fs-extra';
+import path from 'path';
 
 export class GoogleSheetService {
-  private sheets: sheets_v4.Sheets;
+  private sheets;
+  private auth: OAuth2Client;
   private sheetId: string;
+  private readonly tokenPath: string;
+  private readonly port: number;
 
-  constructor(credentialsPath: string, sheetId: string) {
+  constructor(sheetId: string) {
     this.sheetId = sheetId;
-    const auth = new google.auth.GoogleAuth({
-      keyFile: path.resolve(credentialsPath),
-      scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+    this.tokenPath = path.join(process.cwd(), '.google-token.json');
+    this.port = parseInt(process.env.OAUTH_PORT || '8591', 10);
+    
+    this.auth = new google.auth.OAuth2(
+      process.env.GOOGLE_CLIENT_ID,
+      process.env.GOOGLE_CLIENT_SECRET,
+      `http://localhost:${this.port}/oauth2callback`
+    );
+
+    // Try to load existing token
+    this.loadSavedToken();
+    
+    this.sheets = google.sheets({ version: 'v4', auth: this.auth });
+  }
+
+  private loadSavedToken(): void {
+    try {
+      if (fs.existsSync(this.tokenPath)) {
+        const token = fs.readJsonSync(this.tokenPath);
+        this.auth.setCredentials(token);
+      }
+    } catch (error) {
+      console.log('No saved token found or token is invalid');
+    }
+  }
+
+  private async saveToken(tokens: Credentials): Promise<void> {
+    try {
+      await fs.writeJson(this.tokenPath, tokens);
+      console.log('Token saved successfully');
+    } catch (error) {
+      console.error('Error saving token:', error);
+    }
+  }
+
+  async startAuthFlow(): Promise<void> {
+    const authUrl = this.auth.generateAuthUrl({
+      access_type: 'offline',
+      scope: ['https://www.googleapis.com/auth/spreadsheets']
     });
 
-    this.sheets = google.sheets({ version: 'v4', auth });
+    console.log('Opening browser for authentication...');
+    console.log('If the browser does not open automatically, please visit this URL:', authUrl);
+    
+    try {
+      // Using dynamic import for ESM compatibility
+      const { default: open } = await import('open').catch(() => ({ default: null }));
+      if (open) {
+        await open(authUrl);
+      }
+    } catch (error) {
+      console.log('Could not open browser automatically. Please visit the URL manually.');
+    }
+  }
+
+  async authorize(code: string): Promise<void> {
+    const { tokens } = await this.auth.getToken(code);
+    this.auth.setCredentials(tokens);
+    await this.saveToken(tokens);
+  }
+
+  getAuthUrl(): string {
+    return this.auth.generateAuthUrl({
+      access_type: 'offline',
+      scope: ['https://www.googleapis.com/auth/spreadsheets']
+    });
   }
 
   async getSheetNames(): Promise<string[]> {
-    try {
-      const response = await this.sheets.spreadsheets.get({
-        spreadsheetId: this.sheetId,
-      });
+    const response = await this.sheets.spreadsheets.get({
+      spreadsheetId: this.sheetId
+    });
 
-      if (!response.data.sheets) {
-        throw new Error('No sheets found in the spreadsheet');
-      }
-
-      return response.data.sheets.map(sheet => sheet.properties?.title || '').filter(Boolean);
-    } catch (error) {
-      console.error('Error fetching sheet names:', error);
-      throw error;
-    }
+    return response.data.sheets?.map(sheet => sheet.properties?.title || '') || [];
   }
 
   async sheetExists(sheetName: string): Promise<boolean> {
@@ -125,12 +181,13 @@ export class GoogleSheetService {
       }
 
       // Then, update with the new content
+      const values = [headers, ...rows];
       await this.sheets.spreadsheets.values.update({
         spreadsheetId: this.sheetId,
         range: sheetName,
         valueInputOption: 'RAW',
         requestBody: {
-          values: [headers, ...rows],
+          values
         },
       });
 

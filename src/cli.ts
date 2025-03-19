@@ -27,10 +27,9 @@ const argv = yargs(hideBin(process.argv))
     description: 'Google Sheet ID (overrides env variable)',
     type: 'string'
   })
-  .option('credentials', {
-    alias: 'c',
-    description: 'Path to Google API credentials JSON file (overrides env variable)',
-    type: 'string'
+  .option('auth', {
+    description: 'Start OAuth2 authentication flow',
+    type: 'boolean'
   })
   .option('output-dir', {
     alias: 'o',
@@ -60,8 +59,18 @@ if (argv.config) {
 
 // Get configuration from env vars, config file, or command line arguments
 const sheetId = argv['sheet-id'] || config.GOOGLE_SHEET_ID || process.env.GOOGLE_SHEET_ID;
-const credentialsPath = argv.credentials || config.GOOGLE_API_CREDENTIALS || process.env.GOOGLE_API_CREDENTIALS;
 const localesDir = argv['output-dir'] || config.LOCALES_DIR || process.env.LOCALES_DIR || './locales';
+const clientId = process.env.GOOGLE_CLIENT_ID;
+const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+
+async function startAuthFlow(): Promise<void> {
+  if (!clientId || !clientSecret) {
+    throw new Error('Missing GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET in environment variables');
+  }
+
+  const googleSheetService = new GoogleSheetService(sheetId || 'dummy');
+  await googleSheetService.startAuthFlow();
+}
 
 async function syncFromSheetToJson(
   googleSheetService: GoogleSheetService,
@@ -114,14 +123,23 @@ async function syncFromJsonToSheet(
 
 async function main(): Promise<void> {
   try {
-    if (!sheetId || !credentialsPath) {
-      throw new Error('Missing required configuration. Please provide Google Sheet ID and credentials path.');
+    if (argv.auth) {
+      await startAuthFlow();
+      return;
+    }
+
+    if (!sheetId) {
+      throw new Error('Missing GOOGLE_SHEET_ID in environment variables');
+    }
+
+    if (!clientId || !clientSecret) {
+      throw new Error('Missing GOOGLE_CLIENT_ID or GOOGLE_CLIENT_SECRET in environment variables');
     }
 
     console.log(`Starting i18n translation sync (${argv.direction})...`);
     
     // Initialize services
-    const googleSheetService = new GoogleSheetService(credentialsPath, sheetId);
+    const googleSheetService = new GoogleSheetService(sheetId);
     const fileService = new LocaleFileService(localesDir);
     const translationProcessor = new TranslationProcessor();
     const reverseProcessor = new ReverseTranslationProcessor();
@@ -133,7 +151,7 @@ async function main(): Promise<void> {
       await syncFromJsonToSheet(googleSheetService, fileService, reverseProcessor);
     }
   } catch (error) {
-    console.error('Error during translation sync:', error);
+    console.error('Error during translation sync:', error instanceof Error ? error.message : error);
     process.exit(1);
   }
 }

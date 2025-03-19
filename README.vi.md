@@ -64,13 +64,20 @@ OAUTH_PORT=8591
 
 ### Xác thực lần đầu
 
-```bash
-# Chạy server OAuth2
-ts-node src/server.ts
+Có 2 cách để chạy xác thực:
 
-# Trong terminal khác, chạy lệnh xác thực
-i18n-sync --auth
+```bash
+# Cách 1: Sử dụng pnpm script
+pnpm auth-setup
+
+# Cách 2: Chạy trực tiếp bash script
+pnpm exec bash auth-script.sh
 ```
+
+Sau khi chạy lệnh:
+1. Một URL xác thực Google sẽ được hiển thị
+2. Truy cập URL đó và hoàn tất quá trình xác thực Google
+3. Sau khi thấy thông báo xác thực thành công, quay lại terminal và nhấn Enter
 
 ### Đồng bộ từ Google Sheets về JSON
 

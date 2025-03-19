@@ -13,7 +13,8 @@
     "auth": "ts-node src/cli.ts --auth",
     "test": "jest",
     "lint": "eslint . --ext .ts",
-    "prepare": "npm run build"
+    "prepare": "npm run build",
+    "auth-setup": "bash auth-script.sh"
   },
   "repository": {
     "type": "git",

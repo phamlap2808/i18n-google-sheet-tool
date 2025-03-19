@@ -17,11 +17,6 @@ export class TranslationProcessor {
         if (!translations[language]) {
           translations[language] = {};
         }
-        
-        // Initialize the category (page name) in each language
-        if (!translations[language][sheetName]) {
-          translations[language][sheetName] = {};
-        }
       }
 
       // Process each row
@@ -33,6 +28,9 @@ export class TranslationProcessor {
 
         // Add translation for each language
         for (const language of languages) {
+          if (!translations[language][sheetName]) {
+            translations[language][sheetName] = {};
+          }
           const translation = row[language]?.trim() || '';
           translations[language][sheetName][key] = translation;
         }

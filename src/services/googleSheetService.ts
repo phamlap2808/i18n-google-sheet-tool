@@ -167,20 +167,22 @@ export class GoogleSheetService {
       if (!exists) {
         console.log(`Sheet ${sheetName} does not exist. Creating it...`);
         await this.createSheet(sheetName);
+        
+        // Wait a bit for the sheet to be fully created
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      } else {
+        // Only clear existing content if the sheet already exists
+        try {
+          await this.sheets.spreadsheets.values.clear({
+            spreadsheetId: this.sheetId,
+            range: sheetName,
+          });
+        } catch (error) {
+          console.log(`Could not clear sheet ${sheetName}, continuing with update.`);
+        }
       }
 
-      // First, clear the existing content (if any)
-      try {
-        await this.sheets.spreadsheets.values.clear({
-          spreadsheetId: this.sheetId,
-          range: sheetName,
-        });
-      } catch (error) {
-        // If clearing fails (e.g., because the sheet is new/empty), continue anyway
-        console.log(`Could not clear sheet ${sheetName}, continuing with update.`);
-      }
-
-      // Then, update with the new content
+      // Update with the new content
       const values = [headers, ...rows];
       await this.sheets.spreadsheets.values.update({
         spreadsheetId: this.sheetId,

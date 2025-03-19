@@ -25,6 +25,8 @@ app.get('/oauth2callback', async (req: Request, res: Response) => {
     await googleSheetService.authorize(code as string);
     
     res.send('Authorization successful! You can close this window and return to the terminal.');
+    // TODO: Close the server after authorization
+    process.exit(0);
   } catch (error) {
     console.error('Authorization error:', error);
     res.status(500).send(`Authorization failed: ${error instanceof Error ? error.message : 'Unknown error'}`);

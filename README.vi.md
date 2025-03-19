@@ -64,13 +64,20 @@ OAUTH_PORT=8591
 
 ### Xác thực lần đầu
 
-```bash
-# Chạy server OAuth2
-ts-node src/server.ts
+Có 2 cách để chạy xác thực:
 
-# Trong terminal khác, chạy lệnh xác thực
-i18n-sync --auth
+```bash
+# Cách 1: Sử dụng pnpm script
+pnpm auth-setup
+
+# Cách 2: Chạy trực tiếp bash script
+pnpm exec bash auth-script.sh
 ```
+
+Sau khi chạy lệnh:
+1. Một URL xác thực Google sẽ được hiển thị
+2. Truy cập URL đó và hoàn tất quá trình xác thực Google
+3. Sau khi thấy thông báo xác thực thành công, quay lại terminal và nhấn Enter
 
 ### Đồng bộ từ Google Sheets về JSON
 
@@ -112,14 +119,40 @@ Ví dụ:
 
 ## Cấu trúc JSON
 
+Các file dịch được tổ chức theo cấu trúc thư mục phân cấp:
+```locales/[lang]/[sheet].json```
+
+Ví dụ về cấu trúc:
+```
+locales/
+  ├── en/
+  │   ├── label.json
+  │   ├── validate.json
+  │   └── test.json
+  ├── vi/
+  │   ├── label.json
+  │   ├── validate.json
+  │   └── test.json
+  └── de/
+      ├── label.json
+      ├── validate.json
+      └── test.json
+```
+
+Mỗi file JSON chứa bản dịch cho một sheet và một ngôn ngữ cụ thể. File phải là một JSON object hợp lệ:
 ```json
 {
   "hello": "Xin chào",
-  "goodbye": "Tạm biệt"
+  "goodbye": "Tạm biệt",
+  "welcome": "Chào mừng"
 }
 ```
 
-Files JSON sẽ được tạo trong thư mục `locales` (hoặc thư mục được chỉ định) với tên file là mã ngôn ngữ (vd: `en.json`, `vi.json`).
+Lưu ý:
+- Khi chạy lệnh `to-json`, thư mục locales sẽ được xóa sạch trước khi tạo các file mới
+- Khi chạy lệnh `to-sheet`, các file JSON không hợp lệ sẽ được bỏ qua và hiển thị cảnh báo
+- Mỗi thư mục ngôn ngữ có thể có các file JSON khác nhau, chúng sẽ được đồng bộ tương ứng
+- Sheet mới sẽ được tự động tạo trong Google Sheets khi có file JSON mới được thêm vào
 
 ## Đóng góp
 
